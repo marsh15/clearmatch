@@ -25,10 +25,13 @@ Free-tier note: the service spins down after ~15 min idle; first request takes
 cd frontend
 vercel login                              # browser auth (once)
 vercel link --project clearmatch
-vercel env add NEXT_PUBLIC_API_URL production
-#   value: https://<render-domain>        (no trailing slash)
+printf '%s' 'https://<render-domain>' | vercel env add API_BASE_URL production
 vercel --prod
 ```
+
+The frontend resolves its API base at runtime from `/api-base` (reads
+`API_BASE_URL`). Repointing to a different backend later = update the env
+var + `vercel --prod --yes` (cached rebuild, ~40s). No code change ever.
 
 Smoke check: open the Vercel URL → Run page loads → click **Happy path** →
 stages stream → decision card appears.

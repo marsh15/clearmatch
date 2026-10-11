@@ -4,5 +4,5 @@
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  return Response.json({ api: process.env.API_BASE_URL ?? "http://localhost:8000" });
+  return Response.json({ api: (process.env.API_BASE_URL ?? "http://localhost:8000").trim() });
 }
