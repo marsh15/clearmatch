@@ -1,11 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { API } from "@/lib/api";
+import { apiBase } from "@/lib/api";
 
 export default function NavLinks() {
   const pathname = usePathname();
+  const [healthHref, setHealthHref] = useState("/api-base");
+
+  useEffect(() => {
+    apiBase().then((base) => setHealthHref(`${base}/api/health`));
+  }, []);
+
   const link = (href: string, label: string) => {
     const active = pathname === href;
     return (
@@ -24,7 +31,7 @@ export default function NavLinks() {
       {link("/", "Run")}
       {link("/dashboard", "Dashboard")}
       <a
-        href={`${API}/api/health`}
+        href={healthHref}
         className="ml-2 hidden min-h-10 items-center rounded-md bg-blue-700 px-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-blue-800 sm:flex"
       >
         API health

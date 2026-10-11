@@ -5,7 +5,7 @@ import Link from "next/link";
 import CodeChip from "@/components/CodeChip";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import DecisionChip from "@/components/DecisionChip";
-import { API, getJSON, money, startPreset, startRun, type Decision, type RunDetail, type StageEvent } from "@/lib/api";
+import { apiBase, getJSON, money, startPreset, startRun, type Decision, type RunDetail, type StageEvent } from "@/lib/api";
 
 const PRESETS = [
   { key: "happy", label: "Happy path", hint: "clean PDF, exact PO match" },
@@ -44,7 +44,7 @@ export default function RunPage() {
 
   const watch = useCallback(async (id: number) => {
     setRunId(id);
-    const es = new EventSource(`${API}/api/runs/${id}/events`);
+    const es = new EventSource(`${await apiBase()}/api/runs/${id}/events`);
     es.addEventListener("stage", (e) => {
       const ev: StageEvent = JSON.parse((e as MessageEvent).data);
       setEvents((prev) => [...prev, ev]);

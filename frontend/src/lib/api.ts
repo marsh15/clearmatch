@@ -1,6 +1,19 @@
-export const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
 export type Decision = "AUTO-APPROVE" | "NEEDS REVIEW" | "REJECT" | "PENDING";
+
+// Resolved once at runtime from /api-base (same-origin), so the deployed
+// frontend can be repointed to any backend without a rebuild.
+let resolvedBase: string | null = null;
+
+export async function apiBase(): Promise<string> {
+  if (resolvedBase) return resolvedBase;
+  try {
+    const res = await fetch("/api-base", { cache: "no-store" });
+    resolvedBase = (await res.json()).api as string;
+  } catch {
+    resolvedBase = "http://localhost:8000";
+  }
+  return resolvedBase;
+}
 
 export interface RunSummary {
   id: number;
@@ -66,19 +79,22 @@ export const money = (v: number | null | undefined) =>
   v == null ? "-" : `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export async function getJSON<T>(path: string): Promise<T> {
-  const res = await fetch(`${API}${path}`, { cache: "no-store" });
+  const base = await apiBase();
+  const res = await fetch(`${base}${path}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return res.json();
 }
 
 export async function startRun(body: FormData): Promise<{ run_id: number }> {
-  const res = await fetch(`${API}/api/runs`, { method: "POST", body });
+  const base = await apiBase();
+  const res = await fetch(`${base}/api/runs`, { method: "POST", body });
   if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
   return res.json();
 }
 
 export async function startPreset(preset: string): Promise<{ run_id: number }> {
-  const res = await fetch(`${API}/api/runs/preset/${preset}`, { method: "POST" });
+  const base = await apiBase();
+  const res = await fetch(`${base}/api/runs/preset/${preset}`, { method: "POST" });
   if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
   return res.json();
 }
