@@ -1,0 +1,27 @@
+# Render blueprint — backend API + free Postgres.
+# Launch: Render dashboard → New → Blueprint → pick this repo (one click).
+services:
+  - type: web
+    name: clearmatch-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clearmatch-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false          # paste in the dashboard, never in the repo
+      - key: RESET_TOKEN
+        generateValue: true  # gates /api/seed/reset in prod
+
+databases:
+  - name: clearmatch-db
+    plan: free
+    databaseName: clearmatch
+    user: clearmatch
