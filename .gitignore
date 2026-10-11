@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.db
+backend/.clearmatch-test.db
+.env
+
+# local env files (never commit, even non-secret ones)
+.env.local
+.env.*.local
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# OS / editor
+.DS_Store
