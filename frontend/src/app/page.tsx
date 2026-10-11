@@ -35,6 +35,7 @@ export default function RunPage() {
   const [detail, setDetail] = useState<RunDetail | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [waking, setWaking] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -52,19 +53,24 @@ export default function RunPage() {
         getJSON<RunDetail>(`/api/runs/${id}`).then(setDetail).catch(() => {});
       }
     });
-    es.onerror = () => { es.close(); };
+    es.onerror = () => {
+      es.close();
+      setError("Live stream interrupted. Open the run from the dashboard to see its result.");
+    };
   }, []);
 
   const launch = async (fn: () => Promise<{ run_id: number }>) => {
     if (busy) return;
     reset(); setBusy(true);
+    const slowTimer = setTimeout(() => setWaking(true), 3000);
     try {
       const { run_id } = await fn();
+      clearTimeout(slowTimer); setWaking(false);
       await watch(run_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setBusy(false);
+      clearTimeout(slowTimer); setWaking(false); setBusy(false);
     }
   };
 
@@ -98,6 +104,11 @@ export default function RunPage() {
             ref={fileInput} type="file" accept="application/pdf" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) void onUpload(f); e.target.value = ""; }}
           />
+          {waking && !error && (
+            <p role="status" className="enter mt-2 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
+              Waking the API. The free tier sleeps when idle; the first request can take up to a minute.
+            </p>
+          )}
           {error && (
             <p role="alert" className="enter mt-2 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>
           )}
@@ -150,9 +161,11 @@ export default function RunPage() {
 
         {!runId && (
           <div className="mt-16 flex flex-col items-center gap-2 text-center">
-            <p className="text-sm font-medium text-slate-600">Nothing running yet</p>
+            <p className="text-sm font-medium text-slate-600">{waking ? "Starting the run…" : "Nothing running yet"}</p>
             <p className="max-w-xs text-xs text-slate-500">
-              Pick a preset or drop a PDF. Each of the seven stages lights up as it executes.
+              {waking
+                ? "The API is waking from idle. This can take up to a minute on the free tier."
+                : "Pick a preset or drop a PDF. Each of the seven stages lights up as it executes."}
             </p>
           </div>
         )}
