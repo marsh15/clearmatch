@@ -17,3 +17,5 @@ frontend/out/
 
 # OS / editor
 .DS_Store
+.vercel/
+.vercel/
