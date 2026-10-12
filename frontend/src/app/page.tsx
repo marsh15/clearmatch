@@ -5,7 +5,7 @@ import Link from "next/link";
 import CodeChip from "@/components/CodeChip";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import DecisionChip from "@/components/DecisionChip";
-import { apiBase, getJSON, money, startPreset, startRun, type Decision, type RunDetail, type StageEvent } from "@/lib/api";
+import { apiBase, getJSON, isLocalDev, money, offlineMessage, startPreset, startRun, type Decision, type RunDetail, type StageEvent } from "@/lib/api";
 
 const PRESETS = [
   { key: "happy", label: "Happy path", hint: "clean PDF, exact PO match" },
@@ -68,7 +68,8 @@ export default function RunPage() {
       clearTimeout(slowTimer); setWaking(false);
       await watch(run_id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg.includes("Failed to fetch") ? offlineMessage(await isLocalDev()) : msg);
     } finally {
       clearTimeout(slowTimer); setWaking(false); setBusy(false);
     }

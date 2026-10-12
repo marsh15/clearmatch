@@ -15,6 +15,17 @@ export async function apiBase(): Promise<string> {
   return resolvedBase;
 }
 
+// Non-local base = public deployment; errors there read differently than local dev.
+export async function isLocalDev(): Promise<boolean> {
+  return (await apiBase()).includes("localhost");
+}
+
+export function offlineMessage(local: boolean): string {
+  return local
+    ? "Backend unreachable. Is the API server running? (cd backend && ../.venv/bin/python -m uvicorn app.main:app --reload)"
+    : "The demo API is offline or waking up. It runs on free hosting that sleeps when idle; the first request can take up to a minute. If this message persists, the backend will be back before the next scheduled demo.";
+}
+
 export interface RunSummary {
   id: number;
   filename: string;

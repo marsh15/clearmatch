@@ -5,7 +5,7 @@ import Link from "next/link";
 import CodeChip from "@/components/CodeChip";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import DecisionChip from "@/components/DecisionChip";
-import { getJSON, type Decision, type RunSummary } from "@/lib/api";
+import { getJSON, isLocalDev, offlineMessage, type Decision, type RunSummary } from "@/lib/api";
 
 interface Stats {
   total_runs: number;
@@ -21,7 +21,7 @@ export default function DashboardPage() {
   useEffect(() => {
     Promise.all([getJSON<RunSummary[]>("/api/runs"), getJSON<Stats>("/api/stats")])
       .then(([r, s]) => { setRuns(r); setStats(s); })
-      .catch((e) => setError(e.message));
+      .catch(async (e) => setError(e.message.includes("Failed to fetch") ? offlineMessage(await isLocalDev()) : e.message));
   }, []);
 
   return (
