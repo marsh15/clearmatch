@@ -96,16 +96,26 @@ export async function getJSON<T>(path: string): Promise<T> {
   return res.json();
 }
 
+async function errorDetail(res: Response): Promise<string> {
+  try {
+    const body = await res.json();
+    if (body && typeof body.detail === "string") return body.detail;
+  } catch {
+    // error body wasn't JSON (e.g. an HTML 502 page from a proxy)
+  }
+  return res.statusText || `HTTP ${res.status}`;
+}
+
 export async function startRun(body: FormData): Promise<{ run_id: number }> {
   const base = await apiBase();
   const res = await fetch(`${base}/api/runs`, { method: "POST", body });
-  if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
+  if (!res.ok) throw new Error(await errorDetail(res));
   return res.json();
 }
 
 export async function startPreset(preset: string): Promise<{ run_id: number }> {
   const base = await apiBase();
   const res = await fetch(`${base}/api/runs/preset/${preset}`, { method: "POST" });
-  if (!res.ok) throw new Error((await res.json()).detail ?? res.statusText);
+  if (!res.ok) throw new Error(await errorDetail(res));
   return res.json();
 }

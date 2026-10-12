@@ -1,25 +1,29 @@
 # Deploying ClearMatch
 
-Backend + Postgres on **Render**, frontend on **Vercel**.
-Repo: https://github.com/marsh15/clearmatch — both platforms deploy from `main`.
+Backend and Postgres on **Render**, frontend on **Vercel**.
+Repo: https://github.com/marsh15/clearmatch. Both platforms deploy from `main`.
 
-## 1 · Backend → Render
+## 1. Backend on Render
 
-The repo ships a blueprint (`render.yaml`): API web service + free Postgres.
+The repo ships a blueprint (`render.yaml`): one API web service plus a free
+Postgres database.
 
-1. Render dashboard → **New → Blueprint** → connect this repo.
-2. It provisions `clearmatch-api` (root `backend/`, health check `/api/health`)
-   and `clearmatch-db` (free Postgres; auto-expires 30 days after last use —
-   fine for the case-study window).
-3. When asked for `OPENAI_API_KEY`, paste yours (sync: false — never in repo).
-4. `RESET_TOKEN` is auto-generated; read it from the dashboard (Environment).
+1. Render dashboard: **New, then Blueprint**, then connect this repo.
+2. It provisions `clearmatch-api` (root `backend/`, health check
+   `/api/health`) and `clearmatch-db` (free Postgres; it expires 30 days
+   after last use, which is fine for the case-study window).
+3. When asked for `OPENAI_API_KEY`, paste yours (`sync: false`, so it never
+   lands in the repo).
+4. `RESET_TOKEN` is auto-generated; read it from the dashboard under
+   Environment.
 
-Smoke check: `https://<render-domain>/api/health` → `{"status":"ok"}`
+Smoke check: `https://<render-domain>/api/health` returns `{"status":"ok"}`.
 
-Free-tier note: the service spins down after ~15 min idle; first request takes
-~30–60 s to wake. Ping `/api/health` before the interview.
+Free-tier note: the service spins down after ~15 min idle and the first
+request takes 30-60 s to wake. Ping `/api/health` before the interview;
+`tools/smoke.sh <base-url>` does that and then runs every preset.
 
-## 2 · Frontend → Vercel
+## 2. Frontend on Vercel
 
 ```bash
 cd frontend
@@ -29,14 +33,14 @@ printf '%s' 'https://<render-domain>' | vercel env add API_BASE_URL production
 vercel --prod
 ```
 
-The frontend resolves its API base at runtime from `/api-base` (reads
-`API_BASE_URL`). Repointing to a different backend later = update the env
-var + `vercel --prod --yes` (cached rebuild, ~40s). No code change ever.
+The frontend resolves its API base at runtime from `/api-base`, which reads
+`API_BASE_URL`. Repointing to a different backend later means updating the env
+var and running `vercel --prod --yes` (cached rebuild, ~40 s). No code change.
 
-Smoke check: open the Vercel URL → Run page loads → click **Happy path** →
-stages stream → decision card appears.
+Smoke check: open the Vercel URL, the Run page loads, click **Happy path**,
+stages stream, the decision card appears.
 
-## 3 · Before the interview
+## 3. Before the interview
 
 - Ping the Vercel URL and `/api/health` 10 minutes early (cold starts).
 - Reset demo state: `POST /api/seed/reset` with header

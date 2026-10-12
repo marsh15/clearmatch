@@ -16,7 +16,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from fpdf import FPDF
+from fpdf import FPDF, XPos, YPos
 
 OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "testdata"))
 
@@ -24,12 +24,12 @@ OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "t
 class InvoicePDF(FPDF):
     def header(self):
         self.set_font("Helvetica", "B", 16)
-        self.cell(0, 10, self.vendor, ln=1)
+        self.cell(0, 10, self.vendor, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.set_font("Helvetica", "", 9)
-        self.cell(0, 5, f"{self.address}", ln=1)
+        self.cell(0, 5, f"{self.address}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(4)
         self.set_font("Helvetica", "B", 13)
-        self.cell(0, 8, "INVOICE", ln=1)
+        self.cell(0, 8, "INVOICE", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(2)
 
     def footer(self):
@@ -59,7 +59,7 @@ def make_invoice(filename: str, *, vendor: str, address: str,
         pdf.set_font("Helvetica", "", 10)
         pdf.cell(40, 6, label)
         pdf.set_font("Helvetica", "B", 10)
-        pdf.cell(0, 6, value, ln=1)
+        pdf.cell(0, 6, value, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
     row("Invoice Number:", invoice_number or "Not provided")
     row("Invoice Date:", invoice_date.isoformat() if invoice_date else "Not provided")
@@ -72,7 +72,7 @@ def make_invoice(filename: str, *, vendor: str, address: str,
     pdf.cell(95, 7, "Description", border=1)
     pdf.cell(25, 7, "Qty", border=1)
     pdf.cell(35, 7, "Unit Price", border=1)
-    pdf.cell(35, 7, "Amount", border=1, ln=1)
+    pdf.cell(35, 7, "Amount", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     subtotal = 0.0
     for desc, qty, unit in lines:
         amount = round(qty * unit, 2)
@@ -81,16 +81,16 @@ def make_invoice(filename: str, *, vendor: str, address: str,
         pdf.cell(95, 7, desc, border=1)
         pdf.cell(25, 7, f"{qty:g}", border=1)
         pdf.cell(35, 7, f"${unit:,.2f}", border=1)
-        pdf.cell(35, 7, f"${amount:,.2f}", border=1, ln=1)
+        pdf.cell(35, 7, f"${amount:,.2f}", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.set_font("Helvetica", "B", 10)
     pdf.cell(155, 7, "Subtotal", border=1)
-    pdf.cell(35, 7, f"${subtotal:,.2f}", border=1, ln=1)
+    pdf.cell(35, 7, f"${subtotal:,.2f}", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.set_font("Helvetica", "", 10)
     pdf.cell(155, 7, "Tax", border=1)
-    pdf.cell(35, 7, f"${tax:,.2f}", border=1, ln=1)
+    pdf.cell(35, 7, f"${tax:,.2f}", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.set_font("Helvetica", "B", 12)
     pdf.cell(155, 8, "Total Due", border=1)
-    pdf.cell(35, 8, f"${subtotal + tax:,.2f}", border=1, ln=1)
+    pdf.cell(35, 8, f"${subtotal + tax:,.2f}", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     if note:
         pdf.ln(4)
         pdf.set_font("Helvetica", "I", 9)

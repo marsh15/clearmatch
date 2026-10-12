@@ -69,11 +69,11 @@ def _missing_field_codes(extraction: ExtractedInvoice, match: MatchResult) -> li
     codes = []
     if not extraction.total:  # None or 0 — no amount to match against
         codes.append("MISSING_TOTAL")
-    if extraction.invoice_number is None:
+    if not extraction.invoice_number:
         codes.append("MISSING_INVOICE_NUMBER")
-    if extraction.po_number is None and match.method == MatchMethod.NONE:
+    if not extraction.po_number and match.method == MatchMethod.NONE:
         codes.append("MISSING_PO_REFERENCE")
-    if extraction.invoice_date is None:
+    if not extraction.invoice_date:
         codes.append("MISSING_INVOICE_DATE")
     return codes
 

@@ -74,7 +74,9 @@ def _start_run(db: Session, filename: str, pdf_bytes: bytes) -> Run:
     return run
 
 
-async def _execute(run_id: int, filename: str, pdf_bytes: bytes):
+def _execute(run_id: int, filename: str, pdf_bytes: bytes):
+    # plain def on purpose: BackgroundTasks would run an async task on the
+    # event loop, and this sync pipeline (DB + LLM calls) would block it
     db = SessionLocal()
     try:
         run_pipeline(db, run_id, filename, pdf_bytes)

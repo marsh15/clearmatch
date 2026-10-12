@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import CodeChip from "@/components/CodeChip";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import DecisionChip from "@/components/DecisionChip";
-import { apiBase, getJSON, isLocalDev, money, offlineMessage, startPreset, startRun, type Decision, type RunDetail, type StageEvent } from "@/lib/api";
+import { apiBase, getJSON, isLocalDev, money, offlineMessage, startPreset, startRun, type RunDetail, type StageEvent } from "@/lib/api";
 
 const PRESETS = [
   { key: "happy", label: "Happy path", hint: "clean PDF, exact PO match" },
@@ -37,14 +37,20 @@ export default function RunPage() {
   const [error, setError] = useState<string | null>(null);
   const [waking, setWaking] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const eventSource = useRef<EventSource | null>(null);
+
+  useEffect(() => () => eventSource.current?.close(), []);
 
   const reset = () => {
+    eventSource.current?.close();
     setEvents([]); setRunId(null); setDetail(null); setError(null);
   };
 
   const watch = useCallback(async (id: number) => {
     setRunId(id);
+    eventSource.current?.close();
     const es = new EventSource(`${await apiBase()}/api/runs/${id}/events`);
+    eventSource.current = es;
     es.addEventListener("stage", (e) => {
       const ev: StageEvent = JSON.parse((e as MessageEvent).data);
       setEvents((prev) => [...prev, ev]);

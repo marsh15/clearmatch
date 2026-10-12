@@ -7,7 +7,6 @@ pypdf
 fpdf2
 pillow
 python-multipart
-sse-starlette
 openai
 pytest
 httpx

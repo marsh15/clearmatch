@@ -87,12 +87,14 @@ def test_llm_output_negative_and_nan_numbers_nulled():
         "total": -5000.0, "subtotal": float("nan"), "tax": float("inf"),
         "po_number": "PO-1", "currency": "USD",
         "line_items": [{"description": "D", "qty": 2, "unit_price": 10.0, "amount": 20.0}],
-        "field_confidence": {"total": 0.99},
+        "field_confidence": {"total": 0.99, "vendor_name": 50, "invoice_date": float("nan"),
+                             "po_number": "high"},
     }, ExtractionSource.TEXT)
     assert inv.total is None            # negative money is garbage, not data
     assert inv.subtotal is None         # NaN
     assert inv.tax is None              # inf
     assert len(inv.vendor_name) == 200  # length-capped
+    assert inv.field_confidence == {"total": 0.99, "vendor_name": 1.0}
 
 
 def test_llm_output_garbage_tolerated():

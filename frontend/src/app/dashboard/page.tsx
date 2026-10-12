@@ -21,7 +21,10 @@ export default function DashboardPage() {
   useEffect(() => {
     Promise.all([getJSON<RunSummary[]>("/api/runs"), getJSON<Stats>("/api/stats")])
       .then(([r, s]) => { setRuns(r); setStats(s); })
-      .catch(async (e) => setError(e.message.includes("Failed to fetch") ? offlineMessage(await isLocalDev()) : e.message));
+      .catch(async (e) => {
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(msg.includes("Failed to fetch") ? offlineMessage(await isLocalDev()) : msg);
+      });
   }, []);
 
   return (
@@ -41,7 +44,7 @@ export default function DashboardPage() {
 
       {error && (
         <p role="alert" className="enter rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          Backend unreachable ({error}). Is the API server running?
+          {error}
         </p>
       )}
 

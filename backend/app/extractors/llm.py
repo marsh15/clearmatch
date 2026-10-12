@@ -87,6 +87,14 @@ def _txt(v, limit: int = 200) -> str | None:
     return v[:limit] or None
 
 
+def _conf(v) -> float | None:
+    """Confidence values are untrusted too: keep them finite and in [0, 1]."""
+    if not isinstance(v, (int, float)) or isinstance(v, bool):
+        return None
+    f = float(v)
+    return min(1.0, max(0.0, f)) if math.isfinite(f) else None
+
+
 def _to_invoice(data: dict, source: ExtractionSource) -> ExtractedInvoice:
     line_items = [LineItem(description=_txt(li.get("description"), 300) or "",
                            qty=_num(li.get("qty")),
@@ -106,8 +114,8 @@ def _to_invoice(data: dict, source: ExtractionSource) -> ExtractedInvoice:
         tax=_num(data.get("tax")),
         total=_num(data.get("total")),
         source=source,
-        field_confidence={k: float(v) for k, v in (data.get("field_confidence") or {}).items()
-                          if isinstance(v, (int, float))},
+        field_confidence={k: c for k, v in (data.get("field_confidence") or {}).items()
+                          if (c := _conf(v)) is not None},
     )
 
 
